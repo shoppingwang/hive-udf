@@ -3,6 +3,7 @@ package com.gochinatv.hive.common;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
+import com.maxmind.geoip2.model.DomainResponse;
 import com.maxmind.geoip2.record.*;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
@@ -27,9 +28,11 @@ public class IPToLocation extends UDF
 
     private static DatabaseReader reader = null;
 
-    private static final int TRANSFORM_TYPE_COUNTRY = 1;
+    private static final int TRANSFORM_TYPE_AREA = 1;
 
-    private static final int TRANSFORM_TYPE_CITY = 2;
+    private static final int TRANSFORM_TYPE_COUNTRY = 2;
+
+    private static final int TRANSFORM_TYPE_CITY = 4;
 
     private static final int GZIP_BUFFER_SIZE = 1024;
 
@@ -76,7 +79,7 @@ public class IPToLocation extends UDF
      * @param type   区域类型
      *
      * @return 区域信息
-     *
+     * @see IPToLocation#TRANSFORM_TYPE_AREA
      * @see IPToLocation#TRANSFORM_TYPE_COUNTRY
      * @see IPToLocation#TRANSFORM_TYPE_CITY
      */
@@ -90,7 +93,11 @@ public class IPToLocation extends UDF
         {
             try
             {
-                if (TRANSFORM_TYPE_COUNTRY == type)
+                if (TRANSFORM_TYPE_AREA == type)
+                {
+                    return toArea(ipAddr);
+                }
+                else if (TRANSFORM_TYPE_COUNTRY == type)
                 {
                     return toCountry(ipAddr);
                 }
@@ -106,6 +113,16 @@ public class IPToLocation extends UDF
         }
 
         return ipAddr;
+    }
+
+    private String toArea(String ipAddr) throws IOException, GeoIp2Exception
+    {
+        InetAddress ipAddress = InetAddress.getByName(ipAddr);
+
+        CityResponse response = reader.city(ipAddress);
+        Continent continent = response.getContinent();
+
+        return continent.getNames().get("zh-CN");
     }
 
     private String toCountry(String ipAddr) throws IOException, GeoIp2Exception
@@ -139,8 +156,10 @@ public class IPToLocation extends UDF
 
         System.out.println(ipToLocation.evaluate("211.103.136.210", 1));
         System.out.println(ipToLocation.evaluate("211.103.136.210", 2));
+        System.out.println(ipToLocation.evaluate("211.103.136.210", 4));
 
         System.out.println(ipToLocation.evaluate("128.101.101.101", 1));
         System.out.println(ipToLocation.evaluate("128.101.101.101", 2));
+        System.out.println(ipToLocation.evaluate("128.101.101.101", 4));
     }
 }
