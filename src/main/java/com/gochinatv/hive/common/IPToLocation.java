@@ -69,16 +69,17 @@ public class IPToLocation extends UDF
         }
     }
 
-    private String toCountry(String ipAddr) throws IOException, GeoIp2Exception
-    {
-        InetAddress ipAddress = InetAddress.getByName(ipAddr);
-
-        CityResponse response = reader.city(ipAddress);
-        Country country = response.getCountry();
-
-        return country.getNames().get("zh-CN");
-    }
-
+    /**
+     * 将IP地址转换为指定类型的区域信息
+     *
+     * @param ipAddr IP地址
+     * @param type   区域类型
+     *
+     * @return 区域信息
+     *
+     * @see IPToLocation#TRANSFORM_TYPE_COUNTRY
+     * @see IPToLocation#TRANSFORM_TYPE_CITY
+     */
     public String evaluate(String ipAddr, int type)
     {
         if (null == ipAddr)
@@ -105,6 +106,16 @@ public class IPToLocation extends UDF
         }
 
         return ipAddr;
+    }
+
+    private String toCountry(String ipAddr) throws IOException, GeoIp2Exception
+    {
+        InetAddress ipAddress = InetAddress.getByName(ipAddr);
+
+        CityResponse response = reader.city(ipAddress);
+        Country country = response.getCountry();
+
+        return country.getNames().get("zh-CN");
     }
 
     private String toCity(String ipAddr) throws IOException, GeoIp2Exception
