@@ -104,6 +104,10 @@ public class IPToLocation extends UDF
                 {
                     return toCity(ipAddr);
                 }
+                else
+                {
+                    throw new UnsupportedOperationException("不支持的转换类型【" + type + "】");
+                }
             }
             catch (Exception e)
             {
