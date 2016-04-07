@@ -35,6 +35,12 @@ public class IPToLocation extends UDF
 
     private static final int GZIP_BUFFER_SIZE = 1024;
 
+    private static final String IP_NULL_LOCATION = "其他";
+
+    private static final String IP_NOT_FOUND_LOCATION = IP_NULL_LOCATION;
+
+    private static final String IP_NOT_VALID_LOCATION = IP_NULL_LOCATION;
+
     static
     {
         InputStream sourceInputStream = IPToLocation.class.getClassLoader().getResourceAsStream("GeoLite2-City.mmdb.gz");
@@ -84,9 +90,11 @@ public class IPToLocation extends UDF
      */
     public String evaluate(String ipAddr, int type)
     {
+        String convertResult;
+
         if (null == ipAddr)
         {
-            return null;
+            convertResult = IP_NULL_LOCATION;
         }
         else if (isIPAddr(ipAddr))
         {
@@ -94,15 +102,15 @@ public class IPToLocation extends UDF
             {
                 if (TRANSFORM_TYPE_AREA == type)
                 {
-                    return toArea(ipAddr);
+                    convertResult = toArea(ipAddr);
                 }
                 else if (TRANSFORM_TYPE_COUNTRY == type)
                 {
-                    return toCountry(ipAddr);
+                    convertResult = toCountry(ipAddr);
                 }
                 else if (TRANSFORM_TYPE_CITY == type)
                 {
-                    return toCity(ipAddr);
+                    convertResult = toCity(ipAddr);
                 }
                 else
                 {
@@ -111,11 +119,17 @@ public class IPToLocation extends UDF
             }
             catch (Exception e)
             {
+                convertResult = IP_NOT_VALID_LOCATION;
+
                 e.printStackTrace();
             }
         }
+        else
+        {
+            convertResult = IP_NOT_VALID_LOCATION;
+        }
 
-        return ipAddr;
+        return null == convertResult ? IP_NULL_LOCATION : convertResult;
     }
 
     private String toArea(String ipAddr) throws IOException, GeoIp2Exception
