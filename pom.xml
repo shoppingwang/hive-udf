@@ -78,7 +78,7 @@
         </resources>
         <testResources>
             <testResource>
-                <directory>resources</directory>
+                <directory>src/test/resources</directory>
             </testResource>
         </testResources>
         <directory>target</directory>
